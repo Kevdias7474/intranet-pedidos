@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de Pedidos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .results-section {
+            padding: 40px;
+            min-height: 400px;
+        }
+
+        .client-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .client-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-step {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: #28a745;
+        }
+
+        .progress-step.current {
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+
+        .status-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-realizado {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-inicial {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-acabamento {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-finalizando {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        .status-pronto {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #6c757d;
+            font-size: 1.1rem;
+            padding: 60px 20px;
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .admin-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .admin-title {
+            font-size: 1.2rem;
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-inicial { background: #dc3545; color: white; }
+        .btn-acabamento { background: #ffc107; color: #212529; }
+        .btn-finalizando { background: #007bff; color: white; }
+        .btn-pronto { background: #28a745; color: white; }
+
+        .status-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .client-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-section {
+                padding: 20px;
+            }
+            
+            .results-section {
+                padding: 20px;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-buttons {
+                justify-content: center;
+            }
+
+            .client-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Acompanhamento de Pedidos</h1>
+            <p>Consulte o status do seu pedido em tempo real</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Digite o nome do cliente para consultar o pedido...">
+                <button class="search-btn" onclick="searchClient()">Buscar</button>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="no-results">
+                <div style="font-size: 3rem; margin-bottom: 20px;">🔍</div>
+                <p>Digite o nome do cliente para consultar o status do pedido</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variável global para armazenar os dados dos clientes
+        let clientsData = {};
+
+        // Carregar dados do arquivo JSON
+        async function loadClientsData() {
+            try {
+                const response = await fetch('./clients_data.json');
+                clientsData = await response.json();
+                console.log('Dados dos clientes carregados:', clientsData);
+            } catch (error) {
+                console.error('Erro ao carregar dados dos clientes:', error);
+                // Fallback para dados de exemplo se o arquivo não existir
+                clientsData = {
+                    'keverson': {
+                        name: 'Keverson',
+                        tipo_obra: 'Casa',
+                        valor_total: 'R$ 12.112,24',
+                        data_entrega: '09/06/2025',
+                        estado: 'RN - Rio Grande do Norte',
+                        municipio: 'Pedra Grande',
+                        status: 2
+                    }
+                };
+            }
+        }
+
+        const statusNames = [
+            'Pedido em fase inicial',
+            'Pedido em fase de acabamento', 
+            'Pedido sendo finalizado',
+            'Pedido pronto'
+        ];
+
+        const statusClasses = [
+            'status-inicial',
+            'status-acabamento', 
+            'status-finalizando',
+            'status-pronto'
+        ];
+
+        function searchClient() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultsSection = document.getElementById('resultsSection');
+
+            if (!searchTerm) {
+                resultsSection.innerHTML = `
+                    <div class="no-results">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">🔍</div>
+                        <p>Digite o nome do cliente para consultar o status do pedido</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const client = clientsData[searchTerm];
+
+            if (!client) {
+                resultsSection.innerHTML = `
+                    <div class="no-results">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
+                        <p>Cliente não encontrado</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.7;">Verifique se o nome foi digitado corretamente</p>
+                    </div>
+                `;
+                return;
+            }
+
+            displayClientResult(client);
+        }
+
+        function displayClientResult(client) {
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Criar barra de progresso
+            let progressBars = '';
+            for (let i = 0; i < 4; i++) {
+                let stepClass = 'progress-step';
+                if (i < client.status) {
+                    stepClass += ' active';
+                } else if (i === client.status) {
+                    stepClass += ' current';
+                }
+                progressBars += `<div class="${stepClass}"></div>`;
+            }
+
+            // Criar grid de status
+            let statusGrid = '';
+            statusGrid += `<div class="status-item status-realizado">✅ Pedido Realizado</div>`;
+            
+            for (let i = 0; i < 4; i++) {
+                const isActive = i <= client.status;
+                const isCurrent = i === client.status;
+                const icon = isActive ? '✅' : (isCurrent ? '🔄' : '⏳');
+                
+                statusGrid += `
+                    <div class="status-item ${statusClasses[i]}" style="opacity: ${isActive ? 1 : 0.5}">
+                        ${icon} ${statusNames[i]}
+                    </div>
+                `;
+            }
+
+            resultsSection.innerHTML = `
+                <div class="client-card">
+                    <div class="client-name">📦 Pedido de ${client.name}</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-title">Progresso do Pedido</div>
+                        <div class="progress-bar">
+                            ${progressBars}
+                        </div>
+                    </div>
+
+                    <div class="status-grid">
+                        ${statusGrid}
+                    </div>
+
+                    <div class="client-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Tipo de Obra</div>
+                            <div class="detail-value">${client.tipo_obra || 'Não informado'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Valor Total</div>
+                            <div class="detail-value">${client.valor_total || 'Não informado'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Data de Entrega</div>
+                            <div class="detail-value">${client.data_entrega || 'Não informado'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Estado</div>
+                            <div class="detail-value">${client.estado || 'Não informado'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Município</div>
+                            <div class="detail-value">${client.municipio || 'Não informado'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status Atual</div>
+                            <div class="detail-value">${statusNames[client.status]}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Progresso</div>
+                            <div class="detail-value">${Math.round(((client.status + 1) / 4) * 100)}% concluído</div>
+                        </div>
+                        ${client.last_updated ? `
+                        <div class="detail-item">
+                            <div class="detail-label">Última Atualização</div>
+                            <div class="detail-value">${formatDateTime(client.last_updated)}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-title">🔧 Painel Administrativo (Atualizar Status)</div>
+                    <div class="status-buttons">
+                        <button class="status-btn btn-inicial" onclick="updateStatus('${client.name.toLowerCase()}', 0)">Fase Inicial</button>
+                        <button class="status-btn btn-acabamento" onclick="updateStatus('${client.name.toLowerCase()}', 1)">Acabamento</button>
+                        <button class="status-btn btn-finalizando" onclick="updateStatus('${client.name.toLowerCase()}', 2)">Finalizando</button>
+                        <button class="status-btn btn-pronto" onclick="updateStatus('${client.name.toLowerCase()}', 3)">Pronto</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateStatus(clientKey, newStatus) {
+            if (clientsData[clientKey]) {
+                clientsData[clientKey].status = newStatus;
+                clientsData[clientKey].last_updated = new Date().toISOString();
+                displayClientResult(clientsData[clientKey]);
+                
+                // Mostrar feedback visual
+                const statusButtons = document.querySelectorAll('.status-btn');
+                statusButtons.forEach(btn => {
+                    btn.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        btn.style.transform = 'scale(1)';
+                    }, 150);
+                });
+
+                // Aqui você pode adicionar uma chamada para salvar no servidor/Google Sheets
+                // saveStatusToServer(clientKey, newStatus);
+            }
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('pt-BR');
+        }
+
+        // Permitir busca ao pressionar Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchClient();
+            }
+        });
+
+        // Carregar dados quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClientsData();
+            document.getElementById('searchInput').focus();
+        });
+    </script>
+</body>
+</html>
+
