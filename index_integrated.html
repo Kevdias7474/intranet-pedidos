@@ -482,18 +482,7 @@
                         </div>
                         ` : ''}
                     </div>
-                </div>
-
-                <div class="admin-panel">
-                    <div class="admin-title">🔧 Painel Administrativo (Atualizar Status)</div>
-                    <div class="status-buttons">
-                        <button class="status-btn btn-inicial" onclick="updateStatus('${client.name.toLowerCase()}', 0)">Fase Inicial</button>
-                        <button class="status-btn btn-acabamento" onclick="updateStatus('${client.name.toLowerCase()}', 1)">Acabamento</button>
-                        <button class="status-btn btn-finalizando" onclick="updateStatus('${client.name.toLowerCase()}', 2)">Finalizando</button>
-                        <button class="status-btn btn-pronto" onclick="updateStatus('${client.name.toLowerCase()}', 3)">Pronto</button>
-                    </div>
-                </div>
-            `;
+                </div    `;
         }
 
         function updateStatus(clientKey, newStatus) {
